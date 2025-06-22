@@ -21,7 +21,7 @@ RUN go build -o server .
 FROM alpine:latest
 
 # Install LaTeX packages
-RUN apk add --no-cache texlive-base texlive-latex-extra
+RUN apk add --no-cache texlive texlive-luatex texlive-xetex curl
 
 # Copy the binary from builder stage
 COPY --from=builder /app/server /server
