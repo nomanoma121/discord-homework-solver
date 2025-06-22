@@ -46,7 +46,7 @@ async function loadCommands() {
   return commandsData;
 }
 
-async function registerCommands(commandsData: any[]) {
+async function registerCommands(commandsData: any[], clientId: string) {
   const rest = new REST().setToken(process.env.DISCORD_TOKEN!);
 
   try {
@@ -57,7 +57,7 @@ async function registerCommands(commandsData: any[]) {
     // Register commands to guild for faster deployment
     if (process.env.GUILD_ID && process.env.GUILD_ID !== "your_guild_id_here") {
       const data = await rest.put(
-        Routes.applicationGuildCommands(client.user!.id, process.env.GUILD_ID),
+        Routes.applicationGuildCommands(clientId, process.env.GUILD_ID),
         {
           body: commandsData,
         }
@@ -70,7 +70,7 @@ async function registerCommands(commandsData: any[]) {
       );
     } else {
       // Fallback to global commands if no guild ID is set
-      const data = await rest.put(Routes.applicationCommands(client.user!.id), {
+      const data = await rest.put(Routes.applicationCommands(clientId), {
         body: commandsData,
       });
 
@@ -88,10 +88,11 @@ async function registerCommands(commandsData: any[]) {
 // When the client is ready, run this code
 client.once(Events.ClientReady, async (readyClient: any) => {
   console.log(`Ready! Logged in as ${readyClient.user.tag}`);
+  console.log(`Bot ID: ${readyClient.user.id}`);
 
   // Load and register commands
   const commandsData = await loadCommands();
-  await registerCommands(commandsData);
+  await registerCommands(commandsData, readyClient.user.id);
 });
 
 // Handle interactions

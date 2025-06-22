@@ -53,7 +53,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     }
 
     // Prepare Gemini API request
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     let prompt = `Solve this mathematical problem and provide the solution in LaTeX format. 
         Wrap the entire solution in a complete LaTeX document structure with \\documentclass{article}, \\begin{document}, and \\end{document}.
