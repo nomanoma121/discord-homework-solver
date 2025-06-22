@@ -57,7 +57,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     let prompt = `この問題を解き、その解答と詳しい解説を**LaTeX形式の本文として**日本語で提供してください。
-注意: \\documentclassや\\begin{document}などの文書構造は**含めないでください**。純粋な解答のテキストと数式（例: これは解答です。$$ y = x^2 $$）のみを生成してください。`;
+注意: \\documentclassや\\begin{document}などの文書構造は**含めないでください**。純粋な解答のテキストと数式（例: これは解答です。$$ y = x^2 $$）のみを生成してください。コメントのような必要でないものは記述しないでください。`;
 
     if (text) {
       prompt += `\n\n問題: ${text}`;

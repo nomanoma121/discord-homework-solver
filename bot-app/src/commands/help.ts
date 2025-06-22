@@ -17,7 +17,7 @@ export async function execute(interaction: CommandInteraction): Promise<void> {
         {
           name: "/solve",
           value:
-            "数学問題を解きます\n" +
+            "問題を解きます\n" +
             "• **image** (オプション): 問題が含まれた画像をアップロード\n" +
             "• **text** (オプション): 問題の説明をテキストで入力\n" +
             "• **output** (オプション): 出力形式を選択 (PDF, PNG, LaTeX Source)",
