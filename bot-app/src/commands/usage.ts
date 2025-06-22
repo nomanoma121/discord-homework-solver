@@ -7,13 +7,13 @@ const DB_PATH = path.join(process.cwd(), "data", "bot.db");
 
 export const data = new SlashCommandBuilder()
   .setName("usage")
-  .setDescription("Check your token usage for the current month");
+  .setDescription("今月のトークン使用量を確認します");
 
 export async function execute(interaction: CommandInteraction): Promise<void> {
   try {
     const db = new Database(DB_PATH);
 
-    // Query to get the sum of used_tokens for the current user for this month
+    // 今月の現在のユーザーのused_tokensの合計を取得するクエリ
     const query = `
             SELECT SUM(used_tokens) as total_tokens
             FROM requests 
@@ -29,13 +29,12 @@ export async function execute(interaction: CommandInteraction): Promise<void> {
     db.close();
 
     await interaction.reply({
-      content: `Your token usage for this month is **${totalTokens.toLocaleString()}** tokens.`,
-      ephemeral: true,
+      content: `📊 **${interaction.user.displayName}** の今月のトークン使用量: **${totalTokens.toLocaleString()}** トークン`,
     });
   } catch (error) {
-    console.error("Error in usage command:", error);
+    console.error("usageコマンドでエラーが発生:", error);
     await interaction.reply({
-      content: "An error occurred while retrieving your usage statistics.",
+      content: "使用統計の取得中にエラーが発生しました。",
       ephemeral: true,
     });
   }

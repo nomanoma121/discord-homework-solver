@@ -7,13 +7,13 @@ const DB_PATH = path.join(process.cwd(), "data", "bot.db");
 
 export const data = new SlashCommandBuilder()
   .setName("history")
-  .setDescription("View your 10 most recent requests");
+  .setDescription("最近の10件のリクエスト履歴を表示します");
 
 export async function execute(interaction: CommandInteraction): Promise<void> {
   try {
     const db = new Database(DB_PATH);
 
-    // Query to get the 10 most recent requests for the current user
+    // 現在のユーザーの最新10件のリクエストを取得するクエリ
     const query = `
             SELECT timestamp, used_tokens
             FROM requests 
@@ -31,14 +31,13 @@ export async function execute(interaction: CommandInteraction): Promise<void> {
 
     if (records.length === 0) {
       await interaction.reply({
-        content: "You have no request history.",
-        ephemeral: true,
+        content: "リクエスト履歴がありません。",
       });
       return;
     }
 
     const embed = new EmbedBuilder()
-      .setTitle("Your 10 Most Recent Requests")
+      .setTitle(`${interaction.user.displayName} の最新10件のリクエスト`)
       .setColor(0x00ae86);
 
     for (const record of records) {
@@ -47,19 +46,18 @@ export async function execute(interaction: CommandInteraction): Promise<void> {
       );
       embed.addFields({
         name: `<t:${timestampUnix}:F>`,
-        value: `${record.used_tokens.toLocaleString()} tokens`,
+        value: `${record.used_tokens.toLocaleString()} トークン`,
         inline: true,
       });
     }
 
     await interaction.reply({
       embeds: [embed],
-      ephemeral: true,
     });
   } catch (error) {
-    console.error("Error in history command:", error);
+    console.error("historyコマンドでエラーが発生:", error);
     await interaction.reply({
-      content: "An error occurred while retrieving your request history.",
+      content: "リクエスト履歴の取得中にエラーが発生しました。",
       ephemeral: true,
     });
   }

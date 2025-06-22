@@ -3,55 +3,54 @@ import type { CommandInteraction } from "discord.js";
 
 export const data = new SlashCommandBuilder()
   .setName("help")
-  .setDescription("Displays information and available commands");
+  .setDescription("利用可能なコマンドと情報を表示します");
 
 export async function execute(interaction: CommandInteraction): Promise<void> {
   try {
     const embed = new EmbedBuilder()
-      .setTitle("Gemini-LaTeX Bot Help")
+      .setTitle("Gemini-LaTeX Bot ヘルプ")
       .setDescription(
-        "I can solve problems from images or text and provide a beautifully formatted PDF solution using AI."
+        "画像やテキストから問題を解き、AIを使用して美しくフォーマットされたPDF解答を提供できます。"
       )
       .setColor(0x4285f4)
       .addFields(
         {
           name: "/solve",
           value:
-            "Solve a mathematical problem\n" +
-            "• **image** (optional): Upload an image containing the problem\n" +
-            "• **text** (optional): Type the problem description\n" +
-            "• **output** (optional): Choose output format (PDF, PNG, or LaTeX Source)",
+            "数学問題を解きます\n" +
+            "• **image** (オプション): 問題が含まれた画像をアップロード\n" +
+            "• **text** (オプション): 問題の説明をテキストで入力\n" +
+            "• **output** (オプション): 出力形式を選択 (PDF, PNG, LaTeX Source)",
           inline: false,
         },
         {
           name: "/usage",
-          value: "Check your token usage for the current month",
+          value: "今月のトークン使用量を確認します",
           inline: true,
         },
         {
           name: "/history",
-          value: "View your 10 most recent requests",
+          value: "最近の10件のリクエスト履歴を表示します",
           inline: true,
         },
         {
           name: "/help",
-          value: "Display this help message",
+          value: "このヘルプメッセージを表示します",
           inline: true,
         }
       )
       .setFooter({
-        text: "Powered by Google Gemini AI • LaTeX compilation in Docker",
+        text: "Powered by Google Gemini AI • Docker内でLaTeXコンパイル",
       })
       .setTimestamp();
 
     await interaction.reply({
       embeds: [embed],
-      ephemeral: true,
     });
   } catch (error) {
-    console.error("Error in help command:", error);
+    console.error("helpコマンドでエラーが発生:", error);
     await interaction.reply({
-      content: "An error occurred while displaying the help information.",
+      content: "ヘルプ情報の表示中にエラーが発生しました。",
       ephemeral: true,
     });
   }

@@ -43,31 +43,31 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const text = interaction.options.getString("text");
     const outputFormat = interaction.options.getString("output") || "PDF";
 
-    // Input validation
+    // 入力検証
     if (!image && !text) {
       await interaction.editReply({
         content:
-          "❌ Please provide either an image or text description of the problem to solve.",
+          "❌ 画像または問題のテキスト説明のいずれかを提供してください。",
       });
       return;
     }
 
-    // Prepare Gemini API request
+    // Gemini APIリクエストの準備
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-    let prompt = `Solve this mathematical problem and provide the solution in LaTeX format. 
-        Wrap the entire solution in a complete LaTeX document structure with \\documentclass{article}, \\begin{document}, and \\end{document}.
-        Use appropriate math environments and formatting. Be thorough in your explanation.`;
+    let prompt = `この数学問題を解き、LaTeX形式で解答を提供してください。
+        完全なLaTeX文書構造（\\documentclass{article}、\\begin{document}、\\end{document}）で解答全体を包んでください。
+        適切な数式環境と書式を使用してください。説明は詳しく記載してください。`;
 
     if (text) {
-      prompt += `\n\nProblem: ${text}`;
+      prompt += `\n\n問題: ${text}`;
     }
 
     let parts: any[] = [prompt];
 
-    // If image is provided, fetch and add it to the request
+    // 画像が提供された場合、取得してリクエストに追加
     if (image) {
-      console.log(`Processing image: ${image.name}`);
+      console.log(`画像を処理中: ${image.name}`);
       const response = await fetch(image.url);
       const imageBuffer = Buffer.from(await response.arrayBuffer());
 
@@ -79,23 +79,23 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       });
     }
 
-    // Call Gemini API
-    console.log("Calling Gemini API...");
+    // Gemini API呼び出し
+    console.log("Gemini APIを呼び出し中...");
     const result = await model.generateContent(parts);
     const response = await result.response;
     const latexCode = response.text();
 
-    console.log("Generated LaTeX code");
+    console.log("LaTeXコードを生成しました");
 
-    // If user wants LaTeX source, return it directly
+    // ユーザーがLaTeXソースを要求した場合、直接返す
     if (outputFormat === "LaTeX Source") {
-      // Log token usage
+      // トークン使用量をログに記録
       const tokenCount =
         (result as any)?.response?.usageMetadata?.totalTokenCount || 0;
       addRequest(interaction.user.id, tokenCount);
 
       await interaction.editReply({
-        content: `✅ LaTeX solution generated! Tokens used: ${tokenCount}`,
+        content: `✅ LaTeX解答を生成しました！ 使用トークン数: ${tokenCount}`,
         files: [
           new AttachmentBuilder(Buffer.from(latexCode), {
             name: "solution.tex",
@@ -105,8 +105,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       return;
     }
 
-    // Send LaTeX code to compiler service
-    console.log("Sending to LaTeX compiler...");
+    // LaTeXコードをコンパイラサービスに送信
+    console.log("LaTeXコンパイラに送信中...");
     const compileResponse = await fetch("http://latex-compiler:8080/compile", {
       method: "POST",
       headers: {
@@ -117,29 +117,29 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
     if (!compileResponse.ok) {
       const errorData = await compileResponse.json();
-      throw new Error(`LaTeX compilation failed: ${errorData.error}`);
+      throw new Error(`LaTeXコンパイルに失敗しました: ${errorData.error}`);
     }
 
-    // Get the compiled PDF
+    // コンパイルされたPDFを取得
     const pdfBuffer = Buffer.from(await compileResponse.arrayBuffer());
 
-    // Log token usage to database
+    // データベースにトークン使用量をログ記録
     const tokenCount =
       (result as any)?.response?.usageMetadata?.totalTokenCount || 0;
     addRequest(interaction.user.id, tokenCount);
 
-    // Send the result back to Discord
+    // 結果をDiscordに送信
     const filename = outputFormat === "PNG" ? "solution.png" : "solution.pdf";
     await interaction.editReply({
-      content: `✅ Problem solved successfully! Tokens used: ${tokenCount}`,
+      content: `✅ 問題を正常に解決しました！ 使用トークン数: ${tokenCount}`,
       files: [new AttachmentBuilder(pdfBuffer, { name: filename })],
     });
   } catch (error) {
-    console.error("Error in solve command:", error);
+    console.error("solveコマンドでエラーが発生:", error);
 
-    let errorMessage = "❌ An error occurred while processing your request.";
+    let errorMessage = "❌ リクエストの処理中にエラーが発生しました。";
     if (error instanceof Error) {
-      errorMessage += ` Error: ${error.message}`;
+      errorMessage += ` エラー: ${error.message}`;
     }
 
     await interaction.editReply({
