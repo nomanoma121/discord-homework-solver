@@ -5,6 +5,7 @@ import {
 } from "discord.js";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { addRequest } from "../db";
+import { parseFullLatexCode } from "../utils";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
@@ -55,9 +56,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     // Gemini APIリクエストの準備
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-    let prompt = `この数学問題を解き、LaTeX形式で解答を提供してください。
-        完全なLaTeX文書構造（\\documentclass{article}、\\begin{document}、\\end{document}）で解答全体を包んでください。
-        適切な数式環境と書式を使用してください。説明は詳しく記載してください。`;
+    let prompt = `この問題を解き、その解答と詳しい解説を**LaTeX形式の本文として**日本語で提供してください。
+注意: \\documentclassや\\begin{document}などの文書構造は**含めないでください**。純粋な解答のテキストと数式（例: これは解答です。$$ y = x^2 $$）のみを生成してください。`;
 
     if (text) {
       prompt += `\n\n問題: ${text}`;
@@ -84,6 +84,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const result = await model.generateContent(parts);
     const response = await result.response;
     const latexCode = response.text();
+    const fullLatexCode = parseFullLatexCode(latexCode);
 
     console.log("LaTeXコードを生成しました");
 
@@ -97,7 +98,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       await interaction.editReply({
         content: `✅ LaTeX解答を生成しました！ 使用トークン数: ${tokenCount}`,
         files: [
-          new AttachmentBuilder(Buffer.from(latexCode), {
+          new AttachmentBuilder(Buffer.from(fullLatexCode), {
             name: "solution.tex",
           }),
         ],
@@ -112,7 +113,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ latex_code: latexCode }),
+      body: JSON.stringify({ latex_code: fullLatexCode }),
     });
 
     if (!compileResponse.ok) {

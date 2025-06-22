@@ -2,32 +2,27 @@
 FROM golang:1.21-alpine AS builder
 
 WORKDIR /app
-
-# Copy go mod files
 COPY go.mod go.sum* ./
-
-# Download dependencies
 RUN go mod download
-
-# Copy source code
 COPY . .
-
-# Build the application
 ENV CGO_ENABLED=0
 ENV GOOS=linux
 RUN go build -o server .
 
 # Final stage
-FROM alpine:latest
+FROM debian:bullseye-slim
 
-# Install LaTeX packages
-RUN apk add --no-cache texlive texlive-luatex texlive-xetex curl
+# Install dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        texlive-full \
+        fonts-ipafont \
+        fontconfig && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Copy the binary from builder stage
+# Copy the binary
 COPY --from=builder /app/server /server
 
-# Expose port
 EXPOSE 8080
-
-# Run the server
 CMD ["/server"]

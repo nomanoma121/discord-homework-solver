@@ -29,7 +29,6 @@ func main() {
 }
 
 func handleCompile(w http.ResponseWriter, r *http.Request) {
-	// Only accept POST requests to /compile
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -37,7 +36,6 @@ func handleCompile(w http.ResponseWriter, r *http.Request) {
 
 	log.Println("Received compilation request")
 
-	// Parse JSON request body
 	var req CompileRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		log.Printf("JSON parsing failed: %v", err)
@@ -47,25 +45,12 @@ func handleCompile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Generate unique identifier for this request
 	requestID := fmt.Sprintf("latex_%d", time.Now().UnixNano())
-
-	// Create temporary file paths
 	texFilePath := filepath.Join("/tmp", requestID+".tex")
-	pdfFilePath := filepath.Join("/tmp", requestID+".pdf")
-	logFilePath := filepath.Join("/tmp", requestID+".log")
-	auxFilePath := filepath.Join("/tmp", requestID+".aux")
 
-	// Cleanup function to remove all temporary files
-	cleanup := func() {
-		os.Remove(texFilePath)
-		os.Remove(pdfFilePath)
-		os.Remove(logFilePath)
-		os.Remove(auxFilePath)
-	}
-	defer cleanup()
+	// deferを使って、この関数が終了する際に必ず一時ファイルを削除する
+	defer os.Remove(texFilePath)
 
-	// Write LaTeX code to temporary file
 	if err := os.WriteFile(texFilePath, []byte(req.LatexCode), 0644); err != nil {
 		log.Printf("Failed to write LaTeX file: %v", err)
 		w.Header().Set("Content-Type", "application/json")
@@ -74,38 +59,40 @@ func handleCompile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Execute pdflatex command
-	cmd := exec.Command("pdflatex", "-output-directory=/tmp", "-interaction=nonstopmode", texFilePath)
-	output, err := cmd.CombinedOutput()
+	// lualatexコマンドを実行
+	cmd := exec.Command("lualatex", "-output-directory=/tmp", "-interaction=nonstopmode", texFilePath)
+	output, err := cmd.CombinedOutput() // 標準出力と標準エラーを両方取得
 
+	// エラーが発生した場合（コンパイル失敗）
 	if err != nil {
-		log.Printf("pdflatex command failed: %v", err)
+		// コマンドの出力を文字列として取得。これがLaTeXのエラーログになる。
+		errorLog := string(output)
 
-		// Try to read the log file for more detailed error information
-		var errorLog string
-		if logData, logErr := os.ReadFile(logFilePath); logErr == nil {
-			errorLog = string(logData)
-		} else {
-			errorLog = string(output)
-		}
+		// 修正点：詳細なエラーログをサーバーのコンソールに出力
+		log.Printf("--- LaTeX Compilation Failed (Request ID: %s) ---", requestID)
+		log.Printf("Full log output:\n%s", errorLog)
+		log.Println("--- End of Log ---")
 
+		// bot-appに詳細なエラーログをJSONで返す
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError) // 500 Internal Server Error
 		json.NewEncoder(w).Encode(ErrorResponse{Error: errorLog})
-		return
+		return // ここで処理を終了
 	}
 
-	// Read the generated PDF file
+	// コンパイル成功時
+	pdfFilePath := filepath.Join("/tmp", requestID+".pdf")
+	defer os.Remove(pdfFilePath) // PDFも関数終了時に削除
+
 	pdfData, err := os.ReadFile(pdfFilePath)
 	if err != nil {
 		log.Printf("Failed to read generated PDF: %v", err)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(ErrorResponse{Error: "Failed to read generated PDF"})
+		json.NewEncoder(w).Encode(ErrorResponse{Error: "Failed to read generated PDF after successful compilation"})
 		return
 	}
 
-	// Send successful response with PDF
 	w.Header().Set("Content-Type", "application/pdf")
 	w.WriteHeader(http.StatusOK)
 	w.Write(pdfData)
