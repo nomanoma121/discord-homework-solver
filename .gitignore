@@ -30,9 +30,6 @@ pids
 coverage/
 *.lcov
 
-# Docker
-.dockerignore
-
 # IDE
 .vscode/
 .idea/

@@ -54,16 +54,32 @@ async function registerCommands(commandsData: any[]) {
       `Started refreshing ${commandsData.length} application (/) commands.`
     );
 
-    // Register commands globally
-    const data = await rest.put(Routes.applicationCommands(client.user!.id), {
-      body: commandsData,
-    });
+    // Register commands to guild for faster deployment
+    if (process.env.GUILD_ID && process.env.GUILD_ID !== "your_guild_id_here") {
+      const data = await rest.put(
+        Routes.applicationGuildCommands(client.user!.id, process.env.GUILD_ID),
+        {
+          body: commandsData,
+        }
+      );
 
-    console.log(
-      `Successfully reloaded ${
-        (data as any[]).length
-      } application (/) commands.`
-    );
+      console.log(
+        `Successfully reloaded ${
+          (data as any[]).length
+        } guild commands for guild ${process.env.GUILD_ID}.`
+      );
+    } else {
+      // Fallback to global commands if no guild ID is set
+      const data = await rest.put(Routes.applicationCommands(client.user!.id), {
+        body: commandsData,
+      });
+
+      console.log(
+        `Successfully reloaded ${
+          (data as any[]).length
+        } global application (/) commands.`
+      );
+    }
   } catch (error) {
     console.error("Error registering commands:", error);
   }
