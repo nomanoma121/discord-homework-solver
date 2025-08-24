@@ -4,6 +4,69 @@
  * @param latexCode - Gemini APIから返された生のLaTeX本文コンテンツ。
  * @returns コンパイル可能な完全なLaTeXドキュメント文字列。
  */
+/**
+ * LaTeXコードからタイトルを抽出します。
+ * セクション、サブセクション、問題文などからタイトルを検索します。
+ * @param latexCode - LaTeXコード
+ * @returns 抽出されたタイトル、または見つからない場合は'solution'
+ */
+export function extractLatexTitle(latexCode: string): string {
+  // \title{...}
+  let match = latexCode.match(/\\title\{([^}]+)\}/);
+  if (match) return sanitizeFilename(match[1]);
+
+  // \section*{...} or \section{...}
+  match = latexCode.match(/\\section\*?\{([^}]+)\}/);
+  if (match) return sanitizeFilename(match[1]);
+
+  // \subsection*{...} or \subsection{...}
+  match = latexCode.match(/\\subsection\*?\{([^}]+)\}/);
+  if (match) return sanitizeFilename(match[1]);
+
+  // # 見出し (Markdown形式)
+  match = latexCode.match(/^# (.+)$/m);
+  if (match) return sanitizeFilename(match[1]);
+
+  // ## 見出し (Markdown形式)
+  match = latexCode.match(/^## (.+)$/m);
+  if (match) return sanitizeFilename(match[1]);
+
+  // 問題、Question、Problemなどの単語を含む行
+  match = latexCode.match(/(?:問題|Question|Problem)[:：]?\s*(.+?)(?:\n|$)/i);
+  if (match) return sanitizeFilename(match[1].trim());
+
+  return 'solution';
+}
+
+/**
+ * ファイル名として使用できるように文字列をサニタイズします。
+ * @param str - サニタイズする文字列
+ * @returns サニタイズされた文字列
+ */
+function sanitizeFilename(str: string): string {
+  return str
+    .replace(/[<>:"/\\|?*]/g, '') // 不正な文字を削除
+    .replace(/\s+/g, '_') // スペースをアンダースコアに
+    .substring(0, 50) // 長すぎる場合は切り詰める
+    .replace(/^_+|_+$/g, ''); // 先頭・末尾のアンダースコアを削除
+}
+
+/**
+ * 現在の日時を YYYYMMDD_HHMMSS 形式の文字列で返します。
+ * @returns 日時文字列
+ */
+export function getCurrentDateString(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+  
+  return `${year}${month}${day}_${hours}${minutes}${seconds}`;
+}
+
 export function parseFullLatexCode(latexCode: string): string {
   let cleanedContent = latexCode.trim();
 

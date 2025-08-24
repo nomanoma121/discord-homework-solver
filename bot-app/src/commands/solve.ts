@@ -5,7 +5,7 @@ import {
 } from "discord.js";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { addRequest } from "../db";
-import { parseFullLatexCode } from "../utils";
+import { parseFullLatexCode, extractLatexTitle, getCurrentDateString } from "../utils";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
@@ -88,6 +88,11 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
     console.log("LaTeXコードを生成しました");
 
+    // タイトルと日時を使ってファイル名を生成
+    const title = extractLatexTitle(latexCode);
+    const dateString = getCurrentDateString();
+    const baseFilename = `${dateString}_${title}`;
+
     // ユーザーがLaTeXソースを要求した場合、直接返す
     if (outputFormat === "LaTeX Source") {
       // トークン使用量をログに記録
@@ -99,7 +104,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         content: `✅ LaTeX解答を生成しました！ 使用トークン数: ${tokenCount}`,
         files: [
           new AttachmentBuilder(Buffer.from(fullLatexCode), {
-            name: "solution.tex",
+            name: `${baseFilename}.tex`,
           }),
         ],
       });
@@ -130,7 +135,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     addRequest(interaction.user.id, tokenCount);
 
     // 結果をDiscordに送信
-    const filename = outputFormat === "PNG" ? "solution.png" : "solution.pdf";
+    const extension = outputFormat === "PNG" ? "png" : "pdf";
+    const filename = `${baseFilename}.${extension}`;
     await interaction.editReply({
       content: `✅ 問題を正常に解決しました！ 使用トークン数: ${tokenCount}`,
       files: [new AttachmentBuilder(pdfBuffer, { name: filename })],
