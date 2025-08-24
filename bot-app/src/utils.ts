@@ -55,6 +55,75 @@ function sanitizeFilename(str: string): string {
  * 現在の日時を YYYYMMDD_HHMMSS 形式の文字列で返します。
  * @returns 日時文字列
  */
+/**
+ * 科目に応じた専用プロンプトを生成します。
+ * @param subject - 科目名
+ * @returns 科目に特化したプロンプト文字列
+ */
+export function getSubjectPrompt(subject: string = "general"): string {
+  const basePrompt = "この問題を解き、その解答と詳しい解説を**LaTeX形式の本文として**日本語で提供してください。\n注意: \\documentclassや\\begin{document}などの文書構造は**含めないでください**。純粋な解答のテキストと数式（例: これは解答です。$$ y = x^2 $$）のみを生成してください。コメントのような必要でないものは記述しないでください。";
+
+  const subjectSpecificPrompts: { [key: string]: string } = {
+    mathematics: `${basePrompt}
+
+**数学解答の指針:**
+- 解答過程を段階的に示してください
+- 重要な定理や公式を使用する際は名前を明記してください
+- 計算過程は省略せず、中間結果も示してください  
+- グラフや図が必要な場合はTikZコードで作成してください
+- 証明問題の場合は論理的な構成を明確にしてください`,
+
+    physics: `${basePrompt}
+
+**物理学解答の指針:**
+- 使用する物理法則や原理を明確に述べてください
+- 単位系を統一し、SI単位を使用してください
+- ベクトル量とスカラー量を区別して表記してください
+- 近似を用いる場合はその妥当性を説明してください
+- 図やグラフが必要な場合はTikZで作成し、座標軸やラベルを明記してください`,
+
+    chemistry: `${basePrompt}
+
+**化学解答の指針:**
+- 化学反応式は正確にバランスを取ってください
+- 化学式はmhchemパッケージの記法を使用してください
+- 分子構造が必要な場合はchemfigパッケージを使用してください
+- 濃度、pH、平衡定数などの計算過程を詳しく示してください
+- 実験条件や仮定を明確にしてください`,
+
+    biology: `${basePrompt}
+
+**生物学解答の指針:**
+- 生物学的現象のメカニズムを段階的に説明してください
+- 関連する器官、組織、細胞の構造と機能を説明してください
+- 図や模式図が必要な場合はTikZで作成してください
+- 専門用語を使用する際は適切な説明を加えてください
+- 進化的、生態学的観点からの考察も含めてください`,
+
+    engineering: `${basePrompt}
+
+**工学解答の指針:**
+- 設計条件や制約条件を明確に整理してください
+- 使用する工学原理や設計手法を説明してください
+- 計算過程では有効数字を考慮してください
+- 安全率や許容値について言及してください
+- 図面や回路図が必要な場合はTikZで作成してください`,
+
+    statistics: `${basePrompt}
+
+**統計学解答の指針:**
+- 使用する統計手法とその適用条件を説明してください
+- 仮説設定を明確にし、有意水準を設定してください
+- 計算過程では確率分布や検定統計量を明示してください
+- 結果の統計的解釈と実践的意味を説明してください
+- 必要に応じてグラフや表をTikZで作成してください`,
+
+    general: basePrompt
+  };
+
+  return subjectSpecificPrompts[subject] || subjectSpecificPrompts.general;
+}
+
 export function getCurrentDateString(): string {
   const now = new Date();
   const year = now.getFullYear();

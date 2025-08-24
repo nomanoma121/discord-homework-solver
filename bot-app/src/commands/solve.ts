@@ -5,7 +5,7 @@ import {
 } from "discord.js";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { addRequest } from "../db";
-import { parseFullLatexCode, extractLatexTitle, getCurrentDateString } from "../utils";
+import { parseFullLatexCode, extractLatexTitle, getCurrentDateString, getSubjectPrompt } from "../utils";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
@@ -34,6 +34,21 @@ export const data = new SlashCommandBuilder()
         { name: "PNG", value: "PNG" },
         { name: "LaTeX Source", value: "LaTeX Source" }
       )
+  )
+  .addStringOption((option: any) =>
+    option
+      .setName("subject")
+      .setDescription("Subject area for specialized solving approach")
+      .setRequired(false)
+      .addChoices(
+        { name: "一般 (General)", value: "general" },
+        { name: "数学 (Mathematics)", value: "mathematics" },
+        { name: "物理学 (Physics)", value: "physics" },
+        { name: "化学 (Chemistry)", value: "chemistry" },
+        { name: "生物学 (Biology)", value: "biology" },
+        { name: "工学 (Engineering)", value: "engineering" },
+        { name: "統計学 (Statistics)", value: "statistics" }
+      )
   );
 
 export async function execute(interaction: ChatInputCommandInteraction) {
@@ -43,6 +58,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const image = interaction.options.getAttachment("image");
     const text = interaction.options.getString("text");
     const outputFormat = interaction.options.getString("output") || "PDF";
+    const subject = interaction.options.getString("subject") || "general";
 
     // 入力検証
     if (!image && !text) {
@@ -56,8 +72,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     // Gemini APIリクエストの準備
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-    let prompt = `この問題を解き、その解答と詳しい解説を**LaTeX形式の本文として**日本語で提供してください。
-注意: \\documentclassや\\begin{document}などの文書構造は**含めないでください**。純粋な解答のテキストと数式（例: これは解答です。$$ y = x^2 $$）のみを生成してください。コメントのような必要でないものは記述しないでください。`;
+    // 科目に応じたプロンプトを取得
+    let prompt = getSubjectPrompt(subject);
 
     if (text) {
       prompt += `\n\n問題: ${text}`;
