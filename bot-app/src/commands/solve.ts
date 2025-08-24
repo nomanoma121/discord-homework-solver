@@ -120,7 +120,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       // トークン使用量をログに記録
       const tokenCount =
         (result as any)?.response?.usageMetadata?.totalTokenCount || 0;
-      addRequest(interaction.user.id, tokenCount);
+      addRequest(tokenCount, subject);
 
       await interaction.editReply({
         content: `✅ LaTeX解答を生成しました！ 使用トークン数: ${tokenCount}`,
@@ -154,7 +154,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     // データベースにトークン使用量をログ記録
     const tokenCount =
       (result as any)?.response?.usageMetadata?.totalTokenCount || 0;
-    addRequest(interaction.user.id, tokenCount);
+    addRequest(tokenCount, subject);
 
     // 結果をDiscordに送信
     const extension = outputFormat === "PNG" ? "png" : "pdf";
