@@ -64,7 +64,13 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     if (!image && !text) {
       await interaction.editReply({
         content:
-          "❌ 画像または問題のテキスト説明のいずれかを提供してください。",
+          "❌ **入力が不足しています**\n" +
+          "📸 問題の画像をアップロードするか、\n" +
+          "📝 `text` オプションで問題文を入力してください。\n\n" +
+          "💡 **使用例:**\n" +
+          "• `/solve image:[画像ファイル]`\n" +
+          "• `/solve text:二次方程式 x²-5x+6=0 を解け`\n" +
+          "• `/solve image:[画像] subject:mathematics output:PDF`",
       });
       return;
     }
@@ -145,7 +151,28 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
     if (!compileResponse.ok) {
       const errorData = await compileResponse.json();
-      throw new Error(`LaTeXコンパイルに失敗しました: ${errorData.error}`);
+      const errorMessage = errorData.error || "不明なエラー";
+      
+      let userFriendlyError = "❌ **LaTeXコンパイルエラー**\n";
+      
+      // よくあるエラーを分かりやすく説明
+      if (errorMessage.includes("Missing") || errorMessage.includes("Undefined")) {
+        userFriendlyError += "📝 LaTeX構文にエラーがあります。数式の記述を確認してください。\n";
+      } else if (errorMessage.includes("Emergency stop") || errorMessage.includes("Fatal error")) {
+        userFriendlyError += "🚫 重大なコンパイルエラーが発生しました。\n";
+      } else if (errorMessage.includes("Package")) {
+        userFriendlyError += "📦 必要なパッケージが見つからない可能性があります。\n";
+      } else {
+        userFriendlyError += "⚠️ LaTeXの処理中に問題が発生しました。\n";
+      }
+      
+      userFriendlyError += `\n🔍 **エラー詳細:** ${errorMessage}\n`;
+      userFriendlyError += "\n💡 **対処方法:**\n";
+      userFriendlyError += "• 別の科目を選択してみてください\n";
+      userFriendlyError += "• 問題文をより詳しく入力してください\n";
+      userFriendlyError += "• LaTeX Source出力で内容を確認してください";
+      
+      throw new Error(userFriendlyError);
     }
 
     // コンパイルされたPDFを取得
@@ -166,9 +193,44 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   } catch (error) {
     console.error("solveコマンドでエラーが発生:", error);
 
-    let errorMessage = "❌ リクエストの処理中にエラーが発生しました。";
+    let errorMessage = "";
+    
     if (error instanceof Error) {
-      errorMessage += ` エラー: ${error.message}`;
+      // すでにユーザーフレンドリーなエラーメッセージの場合はそのまま使用
+      if (error.message.includes("**LaTeXコンパイルエラー**")) {
+        errorMessage = error.message;
+      } else if (error.message.includes("LaTeXコンパイルに失敗")) {
+        errorMessage = error.message; // 上で処理されたエラー
+      } else if (error.message.includes("fetch")) {
+        errorMessage = "❌ **ネットワークエラー**\n" +
+          "🌐 サーバーとの通信に失敗しました。\n\n" +
+          "💡 **対処方法:**\n" +
+          "• しばらく待ってから再試行してください\n" +
+          "• 画像サイズが大きすぎる場合は小さくしてください";
+      } else if (error.message.includes("timeout")) {
+        errorMessage = "❌ **処理タイムアウト**\n" +
+          "⏰ 処理に時間がかかりすぎています。\n\n" +
+          "💡 **対処方法:**\n" +
+          "• 問題をより簡単な部分に分けて試してください\n" +
+          "• 画像の解像度を下げてください";
+      } else if (error.message.includes("API")) {
+        errorMessage = "❌ **API エラー**\n" +
+          "🤖 AI サービスで問題が発生しました。\n\n" +
+          "💡 **対処方法:**\n" +
+          "• しばらく待ってから再試行してください\n" +
+          "• 問題文をより明確に記述してください";
+      } else {
+        errorMessage = "❌ **予期しないエラー**\n" +
+          "⚠️ 処理中に問題が発生しました。\n\n" +
+          `🔍 **エラー詳細:** ${error.message}\n\n` +
+          "💡 **対処方法:**\n" +
+          "• `/help` で使用方法を確認してください\n" +
+          "• 問題が続く場合は管理者にお知らせください";
+      }
+    } else {
+      errorMessage = "❌ **不明なエラー**\n" +
+        "⚠️ 予期しない問題が発生しました。\n\n" +
+        "💡 管理者にお知らせください。";
     }
 
     await interaction.editReply({
