@@ -136,6 +136,125 @@ export function getCurrentDateString(): string {
   return `${year}${month}${day}_${hours}${minutes}${seconds}`;
 }
 
+/**
+ * 科目に応じたLaTeXテンプレートを生成します。
+ * @param subject - 科目名
+ * @param content - LaTeXコンテンツ
+ * @returns 科目に最適化されたLaTeXドキュメント
+ */
+export function generateSubjectSpecificLatex(subject: string, content: string): string {
+  const subjectPackages: { [key: string]: string } = {
+    mathematics: `
+% --- 数学特化パッケージ ---
+\\usepackage{amsmath, amssymb, amsthm}  % 数学記号・環境
+\\usepackage{mathrsfs}         % 筆記体数学文字
+\\usepackage{mathtools}        % 数学ツール拡張
+\\usepackage{bm}               % 太字ベクトル
+\\usepackage{cases}            % case環境拡張
+\\usepackage{tikz-cd}          % 可換図式`,
+
+    physics: `
+% --- 物理学特化パッケージ ---
+\\usepackage{amsmath, amssymb}
+\\usepackage{siunitx}          % SI単位系
+\\usepackage{physics}          % 物理記法（偏微分、ベクトルなど）
+\\usepackage{bm}               % 太字ベクトル
+\\usepackage{braket}           % ブラケット記法
+\\usepackage{tensor}           % テンソル記法`,
+
+    chemistry: `
+% --- 化学特化パッケージ ---
+\\usepackage{amsmath, amssymb}
+\\usepackage[version=4]{mhchem}  % 化学式・反応式
+\\usepackage{chemfig}          % 化学構造式
+\\usepackage{chemformula}      % 化学式の追加機能
+\\usepackage{bohr}             % 原子構造図
+\\usepackage{modiagram}        % 分子軌道図`,
+
+    biology: `
+% --- 生物学特化パッケージ ---
+\\usepackage{amsmath, amssymb}
+\\usepackage{tikz}
+\\usetikzlibrary{shapes.geometric, arrows.meta, positioning}
+\\usepackage{pgfplots}         % グラフ・チャート
+\\usepackage{xcolor}           % カラー設定`,
+
+    engineering: `
+% --- 工学特化パッケージ ---
+\\usepackage{amsmath, amssymb}
+\\usepackage{siunitx}          % SI単位系
+\\usepackage{tikz}
+\\usetikzlibrary{circuits.ee.IEC, positioning, arrows.meta}
+\\usepackage{pgfplots}         % グラフ・図表
+\\usepackage{circuitikz}       % 電子回路図
+\\usepackage{steinmetz}        % 複素数表示`,
+
+    statistics: `
+% --- 統計学特化パッケージ ---
+\\usepackage{amsmath, amssymb, amsthm}
+\\usepackage{mathtools}        % 数学ツール
+\\usepackage{bm}               % 太字文字
+\\usepackage{tikz}
+\\usepackage{pgfplots}         % 統計グラフ
+\\usepackage{pgfplotstable}    % データテーブル
+\\usepackage{array}            % 表拡張`,
+
+    general: `
+% --- 基本パッケージ ---
+\\usepackage{amsmath, amssymb}
+\\usepackage{tikz}
+\\usepackage{pgfplots}`
+  };
+
+  const packages = subjectPackages[subject] || subjectPackages.general;
+  
+  const template = `
+\\documentclass[a4paper, 12pt]{ltjsarticle}
+
+${packages}
+
+% --- 共通パッケージ ---
+\\usepackage{geometry}         % 用紙サイズ・余白設定
+\\usepackage{graphicx}         % 画像の挿入
+\\usepackage{luatexja-fontspec} % フォント設定
+\\usepackage{float}            % 図表の位置を[H]で固定
+\\usepackage{booktabs}         % 表の横線を美しくする
+\\usepackage{subcaption}       % 複数の図を並べて(a), (b)のように参照
+\\usepackage{enumitem}         % 箇条書きのインデントやラベルを柔軟に設定
+\\usepackage{fancyhdr}         % ヘッダーとフッターを自由にカスタマイズ
+\\usepackage{xcolor}           % カラー設定
+
+% --- パッケージ設定 ---
+% 余白設定
+\\geometry{left=20mm, right=20mm, top=25mm, bottom=25mm}
+
+% フォント設定 (コンテナにインストールされている日本語フォントを指定)
+\\setmainjfont{IPAexMincho}
+\\setsansjfont{IPAexGothic}
+
+% ヘッダー・フッターの設定
+\\pagestyle{fancy}
+\\fancyhf{} % ヘッダーとフッターを一旦クリア
+\\fancyhead[L]{\\leftmark} % ヘッダー左に章タイトル
+\\fancyfoot[C]{\\thepage} % フッター中央にページ番号
+\\renewcommand{\\headrulewidth}{0.4pt} % ヘッダーの下に線を引く
+
+% リンク設定 (パッケージの最後に読み込むのが推奨)
+\\usepackage[luatex, pdfencoding=auto, hidelinks]{hyperref} % PDFに目次やURLのリンクを付与
+
+\\begin{document}
+\\fancypagestyle{plain}{ % 最初のページなどplainスタイルの場合もfancyhdrを適用
+  \\fancyhf{}
+  \\fancyfoot[C]{\\thepage}
+}
+
+${content}
+\\end{document}
+`;
+
+  return template;
+}
+
 export function parseFullLatexCode(latexCode: string): string {
   let cleanedContent = latexCode.trim();
 

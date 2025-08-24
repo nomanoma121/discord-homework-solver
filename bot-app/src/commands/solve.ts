@@ -5,7 +5,7 @@ import {
 } from "discord.js";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { addRequest } from "../db";
-import { parseFullLatexCode, extractLatexTitle, getCurrentDateString, getSubjectPrompt } from "../utils";
+import { parseFullLatexCode, extractLatexTitle, getCurrentDateString, getSubjectPrompt, generateSubjectSpecificLatex } from "../utils";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
@@ -100,7 +100,13 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const result = await model.generateContent(parts);
     const response = await result.response;
     const latexCode = response.text();
-    const fullLatexCode = parseFullLatexCode(latexCode);
+    
+    // LaTeXコードを前処理（Markdownクリーンアップなど）
+    const cleanedLatexCode = parseFullLatexCode(latexCode);
+    
+    // 科目に応じたテンプレートでラップ
+    const contentOnly = cleanedLatexCode.replace(/\\documentclass[\s\S]*?\\begin\{document\}/, '').replace(/\\end\{document\}/, '').trim();
+    const fullLatexCode = generateSubjectSpecificLatex(subject, contentOnly);
 
     console.log("LaTeXコードを生成しました");
 
