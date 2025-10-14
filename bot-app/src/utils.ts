@@ -151,7 +151,19 @@ export function generateSubjectSpecificLatex(subject: string, content: string): 
 \\usepackage{mathtools}        % 数学ツール拡張
 \\usepackage{bm}               % 太字ベクトル
 \\usepackage{cases}            % case環境拡張
-\\usepackage{tikz-cd}          % 可換図式`,
+\\usepackage{tikz}
+\\usetikzlibrary{
+  automata, positioning, arrows, arrows.meta, calc, decorations.pathreplacing,
+  patterns, shapes.geometric, shapes.misc, shapes.symbols, shapes.arrows,
+  decorations.markings, decorations.pathmorphing, decorations.shapes,
+  decorations.text, backgrounds, fit, matrix, trees, graphs, petri,
+  topaths, quotes, angles, intersections, through, mindmap, calendar,
+  chains, scopes, shadows, fadings, shadings, spy, folding, 3d
+}
+\\usepackage{tikz-cd}          % 可換図式
+\\usepackage{pgfplots}
+\\pgfplotsset{compat=1.18}
+\\usepgfplotslibrary{fillbetween, statistics, polar, colormaps}`,
 
     physics: `
 % --- 物理学特化パッケージ ---
@@ -160,7 +172,17 @@ export function generateSubjectSpecificLatex(subject: string, content: string): 
 \\usepackage{physics}          % 物理記法（偏微分、ベクトルなど）
 \\usepackage{bm}               % 太字ベクトル
 \\usepackage{braket}           % ブラケット記法
-\\usepackage{tensor}           % テンソル記法`,
+\\usepackage{tensor}           % テンソル記法
+\\usepackage{tikz}
+\\usetikzlibrary{
+  positioning, arrows.meta, decorations.pathmorphing, patterns, angles, quotes, calc,
+  shapes.geometric, shapes.misc, decorations.pathreplacing, decorations.markings,
+  decorations.text, backgrounds, fit, matrix, 3d, perspective, circuits.logic.US,
+  circuits.logic.IEC, circuits.ee.IEC, scopes, shadows, fadings, spy, through
+}
+\\usepackage{pgfplots}
+\\pgfplotsset{compat=1.18}
+\\usepgfplotslibrary{fillbetween, colormaps, polar}`,
 
     chemistry: `
 % --- 化学特化パッケージ ---
@@ -169,14 +191,29 @@ export function generateSubjectSpecificLatex(subject: string, content: string): 
 \\usepackage{chemfig}          % 化学構造式
 \\usepackage{chemformula}      % 化学式の追加機能
 \\usepackage{bohr}             % 原子構造図
-\\usepackage{modiagram}        % 分子軌道図`,
+\\usepackage{modiagram}        % 分子軌道図
+\\usepackage{tikz}
+\\usetikzlibrary{
+  positioning, arrows.meta, shapes.geometric, decorations.pathreplacing,
+  shapes.misc, patterns, calc, decorations.markings, decorations.text,
+  backgrounds, fit, matrix, chains, shadows, 3d, angles, quotes
+}
+\\usepackage{pgfplots}
+\\pgfplotsset{compat=1.18}
+\\usepgfplotslibrary{fillbetween, statistics, colormaps}`,
 
     biology: `
 % --- 生物学特化パッケージ ---
 \\usepackage{amsmath, amssymb}
 \\usepackage{tikz}
-\\usetikzlibrary{shapes.geometric, arrows.meta, positioning}
+\\usetikzlibrary{
+  shapes.geometric, arrows.meta, positioning, decorations.pathreplacing, patterns, calc,
+  shapes.misc, shapes.symbols, decorations.markings, decorations.text, decorations.pathmorphing,
+  backgrounds, fit, matrix, trees, graphs, mindmap, chains, shadows, fadings, through
+}
 \\usepackage{pgfplots}         % グラフ・チャート
+\\pgfplotsset{compat=1.18}
+\\usepgfplotslibrary{fillbetween, statistics, groupplots, dateplot, colormaps}
 \\usepackage{xcolor}           % カラー設定`,
 
     engineering: `
@@ -184,10 +221,18 @@ export function generateSubjectSpecificLatex(subject: string, content: string): 
 \\usepackage{amsmath, amssymb}
 \\usepackage{siunitx}          % SI単位系
 \\usepackage{tikz}
-\\usetikzlibrary{circuits.ee.IEC, positioning, arrows.meta}
+\\usetikzlibrary{
+  circuits.ee.IEC, circuits.logic.US, circuits.logic.IEC, positioning, arrows.meta,
+  shapes.geometric, calc, decorations.pathreplacing, automata, shapes.misc, patterns,
+  decorations.markings, decorations.text, backgrounds, fit, matrix, chains, shadows,
+  3d, perspective, angles, quotes, through, petri, graphs
+}
 \\usepackage{pgfplots}         % グラフ・図表
+\\pgfplotsset{compat=1.18}
+\\usepgfplotslibrary{fillbetween, statistics, polar, smithchart, ternary, colormaps}
 \\usepackage{circuitikz}       % 電子回路図
-\\usepackage{steinmetz}        % 複素数表示`,
+\\usepackage{steinmetz}        % 複素数表示
+\\usepackage{karnaugh-map}     % カルノー図`,
 
     statistics: `
 % --- 統計学特化パッケージ ---
@@ -195,15 +240,35 @@ export function generateSubjectSpecificLatex(subject: string, content: string): 
 \\usepackage{mathtools}        % 数学ツール
 \\usepackage{bm}               % 太字文字
 \\usepackage{tikz}
+\\usetikzlibrary{
+  positioning, arrows.meta, shapes.geometric, patterns, calc, decorations.pathreplacing,
+  shapes.misc, decorations.markings, backgrounds, fit, matrix, trees, graphs,
+  shadows, chains, through
+}
 \\usepackage{pgfplots}         % 統計グラフ
+\\pgfplotsset{compat=1.18}
+\\usepgfplotslibrary{fillbetween, statistics, groupplots, dateplot, polar, colormaps}
 \\usepackage{pgfplotstable}    % データテーブル
 \\usepackage{array}            % 表拡張`,
 
     general: `
 % --- 基本パッケージ ---
-\\usepackage{amsmath, amssymb}
+\\usepackage{amsmath, amssymb, amsthm}
+\\usepackage{mathtools}
+\\usepackage{bm}
 \\usepackage{tikz}
-\\usepackage{pgfplots}`
+\\usetikzlibrary{
+  automata, positioning, arrows, arrows.meta, calc, decorations.pathreplacing, patterns,
+  shapes.geometric, shapes.misc, shapes.symbols, shapes.arrows, decorations.markings,
+  decorations.pathmorphing, decorations.shapes, decorations.text, backgrounds, fit,
+  matrix, trees, graphs, petri, topaths, quotes, angles, intersections, through,
+  mindmap, calendar, chains, scopes, shadows, fadings, shadings, spy, 3d, circuits.logic.US,
+  circuits.logic.IEC, circuits.ee.IEC, perspective
+}
+\\usepackage{pgfplots}
+\\pgfplotsset{compat=1.18}
+\\usepgfplotslibrary{fillbetween, statistics, groupplots, dateplot, polar, smithchart, colormaps}
+\\usepackage{circuitikz}       % 電子回路図（generalでも使えるように）`
   };
 
   const packages = subjectPackages[subject] || subjectPackages.general;
@@ -297,8 +362,9 @@ export function parseFullLatexCode(latexCode: string): string {
 \\documentclass[a4paper, 12pt]{ltjsarticle}
 
 % --- 基本パッケージ ---
-\\usepackage{amsmath}      % 高度な数式環境
-\\usepackage{amssymb}      % 特殊な数学記号
+\\usepackage{amsmath, amssymb, amsthm}  % 数学
+\\usepackage{mathtools}    % 数学ツール拡張
+\\usepackage{bm}           % 太字ベクトル
 \\usepackage{geometry}     % 用紙サイズ・余白設定
 \\usepackage{graphicx}     % 画像の挿入
 \\usepackage{luatexja-fontspec} % フォント設定
@@ -306,6 +372,18 @@ export function parseFullLatexCode(latexCode: string): string {
 % --- 分野共通で便利なパッケージ ---
 \\usepackage{float}        % 図表の位置を[H]で固定
 \\usepackage{tikz}         % 高機能な作図
+\\usetikzlibrary{
+  automata, positioning, arrows, arrows.meta, calc, decorations.pathreplacing, patterns,
+  shapes.geometric, shapes.misc, shapes.symbols, shapes.arrows, decorations.markings,
+  decorations.pathmorphing, decorations.shapes, decorations.text, backgrounds, fit,
+  matrix, trees, graphs, petri, topaths, quotes, angles, intersections, through,
+  mindmap, calendar, chains, scopes, shadows, fadings, shadings, spy, 3d,
+  circuits.logic.US, circuits.logic.IEC, circuits.ee.IEC, perspective
+}
+\\usepackage{pgfplots}
+\\pgfplotsset{compat=1.18}
+\\usepgfplotslibrary{fillbetween, statistics, groupplots, dateplot, polar, smithchart, colormaps}
+\\usepackage{circuitikz}   % 電子回路図
 \\usepackage{booktabs}     % 表の横線を美しくする
 \\usepackage{subcaption}   % 複数の図を並べて(a), (b)のように参照
 \\usepackage{enumitem}     % 箇条書きのインデントやラベルを柔軟に設定
@@ -317,10 +395,13 @@ export function parseFullLatexCode(latexCode: string): string {
 % 物理学向け
 \\usepackage{siunitx}      % 物理単位(SI単位)をきれいに表示
 \\usepackage{physics}      % 物理学特有の記法（ベクトル、微分、ブラケットなど）
+\\usepackage{braket}       % ブラケット記法
+\\usepackage{tensor}       % テンソル記法
 
 % 化学向け
 \\usepackage[version=4]{mhchem} % 化学式や反応式をきれいに表示
 \\usepackage{chemfig}      % 化学構造式の描画
+\\usepackage{chemformula}  % 化学式の追加機能
 
 % --- パッケージ設定 ---
 % 余白設定

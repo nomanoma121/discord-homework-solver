@@ -109,9 +109,17 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     
     // LaTeXコードを前処理（Markdownクリーンアップなど）
     const cleanedLatexCode = parseFullLatexCode(latexCode);
-    
+
     // 科目に応じたテンプレートでラップ
-    const contentOnly = cleanedLatexCode.replace(/\\documentclass[\s\S]*?\\begin\{document\}/, '').replace(/\\end\{document\}/, '').trim();
+    // documentclassから\begin{document}まで、および\end{document}以降を削除
+    let contentOnly = cleanedLatexCode
+      .replace(/\\documentclass[\s\S]*?\\begin\{document\}/s, '')
+      .replace(/\\end\{document\}[\s\S]*/s, '')
+      .trim();
+
+    // \fancypagestyle{plain}{...} の定義を削除（テンプレートに含まれるため）
+    contentOnly = contentOnly.replace(/\\fancypagestyle\{plain\}\{[\s\S]*?\}/g, '');
+
     const fullLatexCode = generateSubjectSpecificLatex(subject, contentOnly);
 
     console.log("LaTeXコードを生成しました");
