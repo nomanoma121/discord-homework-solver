@@ -17,7 +17,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       .addFields(
         {
           name: "🎯 メインコマンド",
-          value: "`/solve` - 問題を解く",
+          value:
+            "• `/solve` - AIで問題を解く\n" +
+            "• `/compile` - LaTeXファイルをコンパイル",
           inline: false,
         },
         {
@@ -61,6 +63,17 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             "/solve image:[物理の図] subject:physics output:PDF\n" +
             "/solve text:化学反応式をバランスさせて subject:chemistry\n" +
             "```",
+          inline: false,
+        },
+        {
+          name: "📝 /compile コマンド",
+          value:
+            "**用途:** 既存のLaTeXファイルをPDFにコンパイル\n\n" +
+            "**使い方:**\n" +
+            "`/compile file:[your_file.tex]`\n\n" +
+            "**オプション:**\n" +
+            "• `output:PDF` - PDF形式（デフォルト）\n" +
+            "• `output:PNG` - PNG画像形式",
           inline: false,
         },
         {
