@@ -121,14 +121,14 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     contentOnly = contentOnly
       // \fancypagestyle{plain}{...} の定義を削除（テンプレートに含まれるため）
       .replace(/\\fancypagestyle\{plain\}\{[\s\S]*?\}/g, '')
-      // \usetikzlibrary{...} の定義を削除（テンプレートに含まれるため）
-      .replace(/\\usetikzlibrary\{[^}]*\}/g, '')
-      // \usepackage{...} の定義を削除（テンプレートに含まれるため）
-      .replace(/\\usepackage(?:\[[^\]]*\])?\{[^}]*\}/g, '')
-      // \pgfplotsset{...} の定義を削除（テンプレートに含まれるため）
-      .replace(/\\pgfplotsset\{[^}]*\}/g, '')
-      // \usepgfplotslibrary{...} の定義を削除（テンプレートに含まれるため）
-      .replace(/\\usepgfplotslibrary\{[^}]*\}/g, '');
+      // \usetikzlibrary{...} の定義を削除（複数行対応）
+      .replace(/\\usetikzlibrary\{[\s\S]*?\}/g, '')
+      // \usepackage{...} の定義を削除（オプション引数も対応）
+      .replace(/\\usepackage(?:\[[^\]]*\])?\{[\s\S]*?\}/g, '')
+      // \pgfplotsset{...} の定義を削除
+      .replace(/\\pgfplotsset\{[\s\S]*?\}/g, '')
+      // \usepgfplotslibrary{...} の定義を削除
+      .replace(/\\usepgfplotslibrary\{[\s\S]*?\}/g, '');
 
     const fullLatexCode = generateSubjectSpecificLatex(subject, contentOnly);
 
