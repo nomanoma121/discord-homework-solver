@@ -104,7 +104,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     // Gemini API呼び出し
     console.log("Gemini APIを呼び出し中...");
     const result = await model.generateContent(parts);
-    const response = await result.response;
+    const response = result.response;
     const latexCode = response.text();
     
     // LaTeXコードを前処理（Markdownクリーンアップなど）
@@ -117,8 +117,18 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       .replace(/\\end\{document\}[\s\S]*/s, '')
       .trim();
 
-    // \fancypagestyle{plain}{...} の定義を削除（テンプレートに含まれるため）
-    contentOnly = contentOnly.replace(/\\fancypagestyle\{plain\}\{[\s\S]*?\}/g, '');
+    // プリアンブルに含まれるべきでない定義を削除
+    contentOnly = contentOnly
+      // \fancypagestyle{plain}{...} の定義を削除（テンプレートに含まれるため）
+      .replace(/\\fancypagestyle\{plain\}\{[\s\S]*?\}/g, '')
+      // \usetikzlibrary{...} の定義を削除（テンプレートに含まれるため）
+      .replace(/\\usetikzlibrary\{[^}]*\}/g, '')
+      // \usepackage{...} の定義を削除（テンプレートに含まれるため）
+      .replace(/\\usepackage(?:\[[^\]]*\])?\{[^}]*\}/g, '')
+      // \pgfplotsset{...} の定義を削除（テンプレートに含まれるため）
+      .replace(/\\pgfplotsset\{[^}]*\}/g, '')
+      // \usepgfplotslibrary{...} の定義を削除（テンプレートに含まれるため）
+      .replace(/\\usepgfplotslibrary\{[^}]*\}/g, '');
 
     const fullLatexCode = generateSubjectSpecificLatex(subject, contentOnly);
 
